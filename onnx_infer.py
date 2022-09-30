@@ -1,6 +1,5 @@
 import onnxruntime as rt
 import numpy as np
-from model import SimpleNet
 import cv2
 import matplotlib.pyplot as plt
 from glob import glob
