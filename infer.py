@@ -10,18 +10,30 @@ import matplotlib.pyplot as plt
 from glob import glob
 from torchvision import datasets, transforms
 import numpy as np
+import onnxruntime as rt
+
 
 
 class DoInference():
-	def __init__(self):
-		self.model = SimpleNet()
-		self.model.load_state_dict(torch.load('mnist_cnn.pt'))
-		self.model.eval()
+	def __init__(self, use_onnx=False):
+		self.use_onnx = use_onnx
+		if self.use_onnx:
+			self.sess = rt.InferenceSession("mnist_cnn.onnx")
+			self.input_name = self.sess.get_inputs()[0].name
+			self.label_name = self.sess.get_outputs()[0].name
+		else:
+			self.model = SimpleNet()
+			self.model.load_state_dict(torch.load('mnist_cnn.pt'))
+			self.model.eval()
 
 		self.transform = transforms.Compose([
 		    # transforms.ToTensor(),
 		    transforms.Normalize((0.1307,), (0.3081,))
 		    ])
+
+	def model_onnx(self, image):
+		pred = self.sess.run([self.label_name], {self.input_name: np.array(image).astype(np.float32)})[0]
+		return pred
 
 	def pre_process(self, image):
 		# gray to binary
@@ -55,7 +67,10 @@ class DoInference():
 		if is_inverted: image = cv2.bitwise_not(image)
 		# preprocess image
 		image_proc = self.pre_process(image)
-		output = self.model(image_proc)
+		if self.use_onnx:
+			output = self.model_onnx(image_proc)
+		else:
+			output = self.model(image_proc)
 		pred_class = output.argmax(dim=1, keepdim=True)
 
 		return pred_class
@@ -80,5 +95,6 @@ class DoInference():
 
 
 if __name__=="__main__":
-	inference = DoInference()
+	inference = DoInference(use_onnx=False)
+	# inference = DoInference(use_onnx=True)
 	inference.run_on_folder('test')
