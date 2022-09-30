@@ -1,6 +1,12 @@
 from flask import Flask, render_template, request
 from onnx_infer import DoInference
 import cv2
+import argparse
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--port", type=int, default=8080)
+args = parser.parse_args()
 
 app = Flask(__name__)
 
@@ -26,4 +32,4 @@ def upload_file_2():
       return f'Predicted Class is: {pred_class}'
 
 if __name__=='__main__':
-    app.run(host='0.0.0.0', port=8080)#, ssl_context='adhoc')
+    app.run(host='0.0.0.0', port=args.port)#, ssl_context='adhoc')
