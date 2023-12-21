@@ -1,5 +1,5 @@
-import sys
-sys.path.append('/home/ec2-user/.local/lib/python3.7/site-packages')
+# import syscd 
+# sys.path.append('/home/ec2-user/.local/lib/python3.7/site-packages')
 
 from flask import Flask, render_template, request
 from onnx_infer import DoInference
