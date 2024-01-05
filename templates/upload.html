@@ -5,5 +5,83 @@
          <input type = "file" name = "file" />
          <input type = "submit"/>
       </form>
+      <!-- <video id="videoElement" autoplay></video>
+
+      <script>
+        // Access the user's camera
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(function(stream) {
+            var video = document.getElementById('videoElement');
+            video.srcObject = stream;
+          })
+          .catch(function(err) {
+            console.log('Error: ' + err);
+          });
+      </script> -->
+      <button id="output_button">?</button>
+
+      <video id="player" controls autoplay width="300" height="300"></video>
+      <button id="capture">Capture</button>
+      <canvas id="canvas" width="100" height="100"></canvas>
+      <script>
+        const player = document.getElementById('player');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const captureButton = document.getElementById('capture');
+
+        
+        const output_button = document.getElementById('output_button');
+      
+        const constraints = {
+          video: true,
+        };
+      
+      //   captureButton.addEventListener('click', () => {
+        function captureClassifyImage() {
+          context.drawImage(player, 0, 0, canvas.width, canvas.height);
+      
+          // Stop all video streams.
+         //  player.srcObject.getVideoTracks().forEach(track => track.stop());
+
+            // Get the image data from the canvas
+         const imageData = canvas.toDataURL('image/png'); // Convert canvas to a data URL (base64-encoded PNG)
+
+         // Send the captured image data to the Flask backend
+         fetch('/upload', {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({ image: imageData }), // Send image data as JSON in the body
+         })
+         .then(response => response.json())
+         .then(data => {
+            pred_class = data.predicted_class
+            console.log('message:', data.predicted_class);
+            output_button.textContent = 'Output: '+pred_class;
+         })
+         .catch(error => {
+            // Handle any errors that occur during the fetch request
+            console.error('Error sending image:', error);
+         });
+         
+        };
+
+      function captureCamera() {
+        navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+          // Attach the video stream to the video element and autoplay.
+          player.srcObject = stream;
+        });
+      };
+
+      //   setInterval(captureClassifyImage, 2000);
+      //   captureButton.addEventListener('click', captureClassifyImage);
+      captureButton.addEventListener('click', () => {
+         captureCamera();
+         setInterval(captureClassifyImage, 2000); // Call uploadImage function every 2 seconds when capture button is clicked
+      });
+      
+
+      </script>
    </body>
 </html>
